@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TWS Tool - Pawn to AHK Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .text-area-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .text-area-wrapper {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .text-area-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .char-count {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: border 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            align-self: center;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .documentation {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        
+        .documentation h2 {
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .documentation h3 {
+            color: #3498db;
+        }
+        
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            background-color: #2ecc71;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>TWS Tool - Pawn to AHK Converter</h1>
+    
+    <div class="container">
+        <div class="text-area-container">
+            <div class="text-area-wrapper">
+                <div class="text-area-header">
+                    <label for="pawnInput">Pawn Script Input</label>
+                    <span class="char-count" id="inputCount">0 characters</span>
+                </div>
+                <textarea id="pawnInput" placeholder="Paste your Pawn script objects here (CreateObject and SetObjectMaterial lines)..."></textarea>
+            </div>
+            
+            <div class="text-area-wrapper">
+                <div class="text-area-header">
+                    <label for="ahkOutput">AutoHotkey Output</label>
+                    <span class="char-count" id="outputCount">0 characters</span>
+                </div>
+                <textarea id="ahkOutput" readonly placeholder="The converted AHK script will appear here..."></textarea>
+            </div>
+        </div>
+        
+        <button onclick="convertToAHK()">Convert to AHK</button>
+        <a id="downloadBtn" class="download-btn" href="#" download="object_spawner.ahk" style="display: none;">Download AHK Script</a>
+    </div>
+    
+    <div class="documentation">
+        <h2>Comprehensive Guide to Converting Pawn Scripts to In-Game Commands</h2>
+        
+        <h3>Introduction</h3>
+        <p>This document explains the complete process of converting <strong>Pawn script objects</strong> (from SA-MP/GTA: San Andreas modding) into <strong>in-game commands</strong> that can be executed via an <strong>AutoHotkey (AHK) script</strong>. This method allows for rapid object spawning in-game using keybinds, making it useful for builders, mappers, and server developers.</p>
+        
+        <h3>1. Understanding the Source: Pawn Script Objects</h3>
+        <p>Pawn scripts (<code>.pwn</code>) define objects in GTA: San Andreas Multiplayer (SA-MP) using the following structure:</p>
+        <pre>CreateObject(modelid, Float:X, Float:Y, Float:Z, Float:rX, Float:rY, Float:rZ, Float:drawDistance = 0.0);
+SetObjectMaterial(objectid, materialindex, modelid, txdname, texturename, materialcolor = 0);</pre>
+        
+        <h3>2. Converting Pawn to In-Game Commands</h3>
+        <p>We convert each <code>CreateObject</code> and <code>SetObjectMaterial</code> into a series of <strong>chat commands</strong> that can be executed in-game.</p>
+        
+        <table>
+            <tr>
+                <th>Pawn Property</th>
+                <th>In-Game Command</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><code>CreateObject</code></td>
+                <td><code>/ocreate [modelid]</code></td>
+                <td><code>/ocreate 13120</code></td>
+            </tr>
+            <tr>
+                <td><code>X Position</code></td>
+                <td><code>/mx [X]</code></td>
+                <td><code>/mx 2869.801025</code></td>
+            </tr>
+            <tr>
+                <td><code>Y Position</code></td>
+                <td><code>/my [Y]</code></td>
+                <td><code>/my -937.794921</code></td>
+            </tr>
+            <tr>
+                <td><code>Z Position</code></td>
+                <td><code>/mz [Z]</code></td>
+                <td><code>/mz 474.615600</code></td>
+            </tr>
+            <tr>
+                <td><code>X Rotation</code></td>
+                <td><code>/rx [rX]</code></td>
+                <td><code>/rx 0.0</code></td>
+            </tr>
+            <tr>
+                <td><code>Y Rotation</code></td>
+                <td><code>/ry [rY]</code></td>
+                <td><code>/ry 0.0</code></td>
+            </tr>
+            <tr>
+                <td><code>Z Rotation</code></td>
+                <td><code>/rz [rZ]</code></td>
+                <td><code>/rz 0.0</code></td>
+            </tr>
+            <tr>
+                <td><code>SetObjectMaterial</code></td>
+                <td><code>/otexture [index] [texturename]</code></td>
+                <td><code>/otexture 0 Bow_grass_gryard</code></td>
+            </tr>
+        </table>
+        
+        <h3>3. AutoHotkey Script for Execution</h3>
+        <p>We use <strong>AutoHotkey</strong> to automate command entry via a <strong>keybind (Ctrl+&amp;)</strong>.</p>
+        <pre>^&:: ; Ctrl + & keybind
+    ; Object 1
+    SendInput, t/ocreate 13120{Enter}
+    Sleep, 50
+    SendInput, t/otexture 0 Bow_grass_gryard{Enter}
+    Sleep, 50
+    SendInput, t/mx 2869.801025{Enter}
+    Sleep, 50
+    ; ... (repeat for all objects)
+Return</pre>
+        
+        <h3>4. Full Conversion Example</h3>
+        <p><strong>Input (Pawn):</strong></p>
+        <pre>CreateObject(13120, 2869.801025, -937.794921, 474.615600, 0.0, 0.0, 0.0, 300.0);
+SetObjectMaterial(tmpobjid, 0, 8515, "exclibrland", "Bow_grass_gryard", 0x00000000);</pre>
+        
+        <p><strong>Output (AHK):</strong></p>
+        <pre>SendInput, t/ocreate 13120{Enter}
+Sleep, 50
+SendInput, t/otexture 0 Bow_grass_gryard{Enter}
+Sleep, 50
+SendInput, t/mx 2869.801025{Enter}
+Sleep, 50
+SendInput, t/my -937.794921{Enter}
+Sleep, 50
+SendInput, t/mz 474.615600{Enter}
+Sleep, 50</pre>
+    </div>
+
+    <script>
+        // Update character count
+        document.getElementById('pawnInput').addEventListener('input', function() {
+            document.getElementById('inputCount').textContent = this.value.length + ' characters';
+        });
+        
+        document.getElementById('ahkOutput').addEventListener('input', function() {
+            document.getElementById('outputCount').textContent = this.value.length + ' characters';
+        });
+        
+        // Extract text between two delimiters
+        function extractBetween(str, startDelim, endDelim) {
+            const startPos = str.indexOf(startDelim) + startDelim.length;
+            const endPos = str.indexOf(endDelim, startPos);
+            return str.substring(startPos, endPos).trim();
+        }
+        
+        // Main conversion function
+        function convertToAHK() {
+            const pawnCode = document.getElementById('pawnInput').value;
+            let ahkScript = "^&::\n";
+            let objectCount = 0;
+            
+            // Process each line
+            pawnCode.split('\n').forEach(line => {
+                line = line.trim();
+                
+                // Handle CreateObject
+                if (line.startsWith('CreateObject(')) {
+                    objectCount++;
+                    
+                    // Extract parameters
+                    const paramsStart = line.indexOf('(') + 1;
+                    const paramsEnd = line.lastIndexOf(')');
+                    const params = line.substring(paramsStart, paramsEnd).split(',');
+                    
+                    // Clean parameters
+                    const model = params[0].trim();
+                    const x = params[1].trim();
+                    const y = params[2].trim();
+                    const z = params[3].trim();
+                    const rx = params[4].trim();
+                    const ry = params[5].trim();
+                    const rz = params[6].trim();
+                    
+                    // Add to AHK script
+                    ahkScript += `    ; Object ${objectCount}\n`;
+                    ahkScript += `    SendInput, t/ocreate ${model}{Enter}\n`;
+                    ahkScript += `    Sleep, 50\n`;
+                    
+                    // Add position commands
+                    ahkScript += `    SendInput, t/mx ${x}{Enter}\n`;
+                    ahkScript += `    Sleep, 50\n`;
+                    ahkScript += `    SendInput, t/my ${y}{Enter}\n`;
+                    ahkScript += `    Sleep, 50\n`;
+                    ahkScript += `    SendInput, t/mz ${z}{Enter}\n`;
+                    ahkScript += `    Sleep, 50\n`;
+                    
+                    // Add rotation commands if not 0
+                    if (rx !== '0.0' && rx !== '0.000000') {
+                        ahkScript += `    SendInput, t/rx ${rx}{Enter}\n`;
+                        ahkScript += `    Sleep, 50\n`;
+                    }
+                    if (ry !== '0.0' && ry !== '0.000000') {
+                        ahkScript += `    SendInput, t/ry ${ry}{Enter}\n`;
+                        ahkScript += `    Sleep, 50\n`;
+                    }
+                    if (rz !== '0.0' && rz !== '0.000000') {
+                        ahkScript += `    SendInput, t/rz ${rz}{Enter}\n`;
+                        ahkScript += `    Sleep, 50\n`;
+                    }
+                }
+                
+                // Handle SetObjectMaterial
+                else if (line.startsWith('SetObjectMaterial(')) {
+                    const paramsStart = line.indexOf('(') + 1;
+                    const paramsEnd = line.lastIndexOf(')');
+                    const params = line.substring(paramsStart, paramsEnd).split(',');
+                    
+                    const index = params[1].trim();
+                    const txdName = params[3].trim().replace(/"/g, '');
+                    const textureName = params[4].trim().replace(/"/g, '');
+                    
+                    // Use the second texture name (textureName)
+                    ahkScript += `    SendInput, t/otexture ${index} ${textureName}{Enter}\n`;
+                    ahkScript += `    Sleep, 50\n`;
+                }
+            });
+            
+            ahkScript += "Return";
+            
+            // Display the result
+            const output = document.getElementById('ahkOutput');
+            output.value = ahkScript;
+            document.getElementById('outputCount').textContent = output.value.length + ' characters';
+            
+            // Enable download button
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.style.display = 'inline-block';
+            downloadBtn.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(ahkScript);
+        }
+    </script>
+</body>
+</html>
